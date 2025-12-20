@@ -11,7 +11,6 @@
 #define I2S_BCLK       26
 #define I2S_LRC        25
 
-// Buttons (FIXED: Input only pins cannot use Pullups)
 #define Pin_vol_up     39
 #define Pin_vol_down   36
 #define Pin_mute       35
@@ -50,8 +49,7 @@ void setup() {
     pinMode(Pin_previous, INPUT_PULLUP);
     pinMode(Pin_pause, INPUT_PULLUP);
     pinMode(Pin_next, INPUT_PULLUP);
-
-    // 2. SETUP SCREEN
+    
     tft.init();
     tft.setRotation(0); 
     tft.setSwapBytes(true);
@@ -81,7 +79,6 @@ void loop() {
     audio.loop();
 
 
-    // --- BUTTONS ---
     if (millis() - button_time > 300) {
         
         // Next
@@ -107,8 +104,6 @@ void loop() {
             button_time = millis();
         }
         
-        // Volume (Logic inverted for INPUT pins usually, check your board)
-        // If these don't work, try == HIGH
         if (digitalRead(Pin_vol_up) == LOW) {
             if (music_info.volume < 21) music_info.volume++;
             audio.setVolume(music_info.volume);
