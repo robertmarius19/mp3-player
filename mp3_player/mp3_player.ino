@@ -67,7 +67,9 @@ void setup() {
     pinMode(Pin_pause, INPUT_PULLUP);
     pinMode(Pin_next, INPUT_PULLUP);
 
+
     // setup screen
+
     tft.init();
     tft.setRotation(0);
     tft.setSwapBytes(true);
@@ -193,6 +195,7 @@ void loop() {
         }
         
         // vol_up
+
         if (digitalRead(Pin_vol_up) == LOW) {
             Serial.println("Volume Up pressed");
             if (music_info.volume < 21)
@@ -213,8 +216,6 @@ void loop() {
         }
     }
 }
-
-// --- HELPER FUNCTIONS ---
 
 void open_new_song(String filename) {
 
@@ -335,8 +336,6 @@ int get_music_list(fs::FS &fs, const char *dirname, uint8_t levels, String wavli
     return i;
 }
 
-// --- AUDIO LIBRARY CALLBACKS ---
-
 void audio_info(const char *info) {
     Serial.print("audio_info: ");
     Serial.println(info);
@@ -374,3 +373,5 @@ void audio_id3data(const char *info) {
     Serial.print("id3data: ");
     Serial.println(info);
 }
+void audio_info(const char *info) {}
+void audio_id3data(const char *info) {}
