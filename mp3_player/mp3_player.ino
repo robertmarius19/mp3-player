@@ -5,9 +5,10 @@
 #include "SD.h"
 #include "FS.h"
 #include <WiFi.h>
-
+#include "lofi_girl.h"
+#include "vinyl.h"
 // WiFi Credentials
-const char* ssid = "***********";
+const char* ssid = "**********";
 const char* password = "********";
 
 // sd_card-pins
@@ -47,9 +48,13 @@ RadioStation radio_stations[] = {
     {"NPR", "https://npr-ice.streamguys1.com/live.mp3"},
     {"Chill Radio", "http://streams.ilovemusic.de/iloveradio17.mp3"},
     {"80s Hits", "http://streams.80s80s.de/web/mp3-192"},
-    {"EDM Radio", "http://streams.bigfm.de/bigfm-nitroxedm-128-mp3"}
+    {"Jazz","http://jazz.w3.at:8000/w3jazz.mp3"},
+    {"HipHop", "http://ice1.somafm.com/beatblender-128-mp3"},
+    {"Rock",   "http://ice1.somafm.com/u80s-128-mp3"},
+    {"LoFi", "http://ice1.somafm.com/groovesalad-128-mp3"}
+
 };
-int radio_count = 4;
+int radio_count = 7;
 int radio_index = 0;
 String current_bitrate = "";
 struct Music_info {
@@ -92,7 +97,8 @@ bool mountSD();
 void connectWiFi();
 void draw_radio_ui();
 void draw_signal_indicator();
-void drawRadioPanel();
+void drawLofiGirl();
+void drawVinyl(TFT_eSPI &tft);
 void setup() {
     Serial.begin(115200);
     Serial.println("Starting MP3 Player with Radio...");
@@ -357,7 +363,6 @@ void switch_mode() {
             open_new_song(file_list[file_index]);
             print_song_time();
         } else {
-            // Can't switch - no files
             tft.fillRect(60, 120, 180, 30, TFT_BLACK);
             tft.setTextColor(TFT_RED, TFT_BLACK);
             tft.drawString("No MP3 Files!", 40, 125, 2);
@@ -387,7 +392,6 @@ void open_radio_station(int index) {
     Serial.print("Connecting to: ");
     Serial.println(radio_stations[index].name);
     
-    // Show connecting message
     tft.fillRect(4, 64, 232, 22, TFT_BLACK);
     tft.setTextColor(TFT_YELLOW, TFT_BLACK);
     tft.drawString("Connecting...", 4, 66, 2);
@@ -403,7 +407,6 @@ void open_radio_station(int index) {
         paused = false;
         signal_strength = WiFi.RSSI();
         
-        // Clear connecting message
         tft.fillRect(4, 64, 232, 22, TFT_BLACK);
         
         Serial.println("✓ Streaming");
@@ -434,7 +437,6 @@ void open_new_song(String filename) {
         Serial.print("Playing: ");
         Serial.println(filename);
         
-        // Parse Name for Screen
         String cleanName = filename;
         if(cleanName.startsWith("/")) cleanName.remove(0,1);
         cleanName.replace(".mp3", "");
@@ -459,6 +461,8 @@ void open_new_song(String filename) {
 }
 
 void drawStart() {
+    tft.fillScreen(TFT_BLACK);
+    drawVinyl(tft);  
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
     tft.drawString("TIME", 6, 0, 2);
     tft.drawString("VOLUME", 182, 0, 2);
@@ -467,7 +471,6 @@ void drawStart() {
     if (current_mode == RADIO_MODE) {
         tft.setTextColor(TFT_CYAN, TFT_BLACK);
         tft.drawString("RADIO", 6, 45, 2);
-        // Draw WiFi signal indicator
         draw_signal_indicator();
     } else {
         if(paused) {
@@ -508,7 +511,8 @@ void update_radio_list() {
     
     tft.fillRect(0, 118, 240, 122, TFT_BLACK); 
     
-    drawRadioPanel();
+    //draw lofi girl
+    drawLofiGirl();
 
    
     tft.setTextColor(0xBDD7, TFT_BLACK);
@@ -560,10 +564,16 @@ void update_playlist_visuals() {
         tft.fillCircle(7, 125 + (relative_position * 15), 3, TFT_ORANGE);
     }
 }
+void drawLofiGirl() {
+    int x_pos = 80;  
+    int y_pos = 100; 
+    tft.fillRect(x_pos, y_pos, LOFI_WIDTH, LOFI_HEIGHT, TFT_BLACK);
 
+    tft.pushImage(x_pos, y_pos, LOFI_WIDTH, LOFI_HEIGHT, (uint16_t *)lofi_girl_map);
+}
 void tft_music() {
     if (current_mode == RADIO_MODE) {
-        // Radio mode 
+        // radio mode 
         tft.fillRect(180, 95, 60, 20, TFT_BLACK);
         
         // station name
@@ -574,7 +584,7 @@ void tft_music() {
         // LIVE indicator with simple animation
         static uint8_t live_fade = 0;
         live_fade += 8;
-        uint16_t live_color = tft.color565(255, live_fade, 0); // Red to yellow fade
+        uint16_t live_color = tft.color565(255, live_fade, 0); // red to yellow fade
         
         tft.fillRect(5, 15, 60, 30, TFT_BLACK);
         tft.setTextColor(live_color, TFT_BLACK);
@@ -619,7 +629,12 @@ void tft_music() {
     tft.setTextColor(0xBDD7, TFT_BLACK);
     tft.drawString(tm + ":" + ts, 5, 20, 4);
 }
-
+void drawVinyl(TFT_eSPI &tft) {
+    int x_pos = (tft.width() - VINYL_WIDTH) / 2; 
+    int y_pos = 0; 
+    tft.fillRect(x_pos, y_pos, VINYL_WIDTH, VINYL_HEIGHT, TFT_BLACK);
+    tft.pushImage(x_pos, y_pos, VINYL_WIDTH, VINYL_HEIGHT, (uint16_t *)vinyl_map);
+}
 void draw_radio_ui() {
     signal_strength = WiFi.RSSI();
     draw_signal_indicator();
@@ -628,7 +643,7 @@ void draw_radio_ui() {
 void draw_signal_indicator() {
     //draw wifi signal
     int x = 198;
-    int y = 50;  =
+    int y = 50; 
     int bar_width = 4;
     int bar_spacing = 6;
     
@@ -698,29 +713,6 @@ int get_music_list(fs::FS &fs, const char *dirname, uint8_t levels, String wavli
     return i;
 }
 
-void drawRadioPanel() {
-    if (current_mode != RADIO_MODE) return;  
-    int x_start = 160;
-    int y_start = 90;
-    int width = 80;
-    int height = 122;
-    
-    int center_x = x_start + (width/2);
-    int center_y = y_start + 75;
-
-    // tower-base
-    tft.drawLine(center_x, center_y - 20, center_x - 10, center_y + 20, TFT_WHITE);
-    tft.drawLine(center_x, center_y - 20, center_x + 10, center_y + 20, TFT_WHITE);
-    tft.drawLine(center_x - 5, center_y, center_x + 5, center_y, TFT_WHITE); // Crossbar
-    tft.drawLine(center_x, center_y - 20, center_x, center_y - 35, TFT_WHITE); // Antenna tip
-    
-    // antenna-circles
-    tft.drawCircle(center_x, center_y - 35, 3, TFT_RED);
-    tft.drawCircle(center_x, center_y - 35, 7, TFT_ORANGE);
-    tft.drawCircle(center_x, center_y - 35, 12, TFT_YELLOW);
-    
-    tft.setTextDatum(TL_DATUM);
-}
 void audio_eof_mp3(const char *info) {
     Serial.print("EOF MP3: ");
     Serial.println(info);
@@ -746,7 +738,6 @@ void audio_showstation(const char *info) {
 void audio_showstreamtitle(const char *info) {
     Serial.print("streamtitle: ");
     Serial.println(info);
-    // update display with current song if in radio mode
     if (current_mode == RADIO_MODE && strlen(info) > 0) {
         current_stream_title = String(info);
         
@@ -765,7 +756,8 @@ void audio_bitrate(const char *info) {
     Serial.println(info);
     current_bitrate = String(info);
     if (current_mode == RADIO_MODE) {
-        drawRadioPanel();
+        //draw lofi girl
+        drawLofiGirl();
     }
 }
 
