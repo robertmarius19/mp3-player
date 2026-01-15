@@ -30,7 +30,7 @@ Modifications to the TFT_eSPI Library
 To ensure correct operation of the TFT display with the MakePython ESP32 Color LCD Wrover, configuration changes were made to the TFT_eSPI library.
 Only hardware configuration files were modified; the internal library logic remains unchanged.
 
- Modifications to User_Setup.h
+ Modifications to User_Setup.h (delete all and copy this)
 
 The display was configured for an ST7789 240×240 SPI TFT and the correct pin mapping:
 
@@ -64,9 +64,8 @@ The display was configured for an ST7789 240×240 SPI TFT and the correct pin ma
 #define SPI_READ_FREQUENCY  20000000
 #define SPI_TOUCH_FREQUENCY 2500000
 
-📄 Modifications to User_Setup_Select.h
-
+Modifications to User_Setup_Select.h
 Only the required setup file was enabled; all other setup lines were commented out:
-
 #include <User_Setups/Setup24_ST7789.h>
+
 
